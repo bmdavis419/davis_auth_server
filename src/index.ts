@@ -2,7 +2,6 @@ import { subjects } from "./subjects";
 import { CloudflareStorage } from "@openauthjs/openauth/storage/cloudflare";
 import { issuer } from "@openauthjs/openauth";
 import { GithubProvider } from "@openauthjs/openauth/provider/github";
-import { Octokit } from "@octokit/core";
 
 declare global {
   interface Env {
@@ -15,28 +14,42 @@ declare global {
 export default {
   async fetch(request, env, ctx): Promise<Response> {
     const getUser = async (accessToken: string) => {
-      const octokit = new Octokit({
-        auth: accessToken,
-      });
+      const [userInfo, emailInfo] = await Promise.all([
+        fetch(`https://api.github.com/user`, {
+          headers: {
+            "User-Agent": "Davis Auth",
+            Accept: "application/vnd.github+json",
+            Authorization: `Bearer ${accessToken}`,
+            "X-GitHub-Api-Version": "2022-11-28",
+          },
+        }),
+        fetch(`https://api.github.com/user/emails`, {
+          headers: {
+            "User-Agent": "Davis Auth",
+            Accept: "application/vnd.github+json",
+            Authorization: `Bearer ${accessToken}`,
+            "X-GitHub-Api-Version": "2022-11-28",
+          },
+        }),
+      ]);
 
-      const userInfo = await octokit.request("GET /user", {
-        headers: {
-          "X-GitHub-Api-Version": "2022-11-28",
-        },
-      });
+      const emailData = (await emailInfo.json()) as {
+        email: string;
+        primary: boolean;
+        verified: boolean;
+        visibility: string;
+      }[];
 
-      console.log(userInfo);
+      const primaryEmail = emailData.find((email) => email.primary);
 
-      const userData = {
-        id: userInfo.data.id.toString(),
-        email: userInfo.data.email ?? "bad man",
+      const githubUser = (await userInfo.json()) as {
+        id: number;
       };
 
-      const user = await env.davis_auth_server.get(userData.id);
-
-      if (!user) {
-        await env.davis_auth_server.put(userData.id, userData.email);
-      }
+      const userData = {
+        id: githubUser.id.toString(),
+        email: primaryEmail?.email ?? "bad man",
+      };
 
       return userData;
     };
@@ -50,7 +63,7 @@ export default {
         github: GithubProvider({
           clientID: env.GITHUB_CLIENT_ID,
           clientSecret: env.GITHUB_CLIENT_SECRET,
-          scopes: ["email"],
+          scopes: ["user:email"],
         }),
       },
       success: async (ctx, value) => {

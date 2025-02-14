@@ -8,7 +8,11 @@
 
 ## TODO
 
-- [ ] deploy
+- [x] deploy
 - [ ] document this
 - [ ] add in a sveltekit example
 - [ ] add in a .dev.vars example
+
+## NOTES
+
+- redirect url is `<YOUR_WORKER_URL>/github/callback`

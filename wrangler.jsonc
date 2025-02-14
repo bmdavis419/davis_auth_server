@@ -4,7 +4,7 @@
  */
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "davis-auth-server",
+  "name": "davis-auth-server", // REPLACE THIS WITH YOUR NAME
   "main": "src/index.ts",
   "compatibility_date": "2025-02-04",
   "observability": {
@@ -14,8 +14,8 @@
 
   "kv_namespaces": [
     {
-      "binding": "davis_auth_server",
-      "id": "e9a99fc2c02f48e09f39d72b5aecfa68"
+      "binding": "davis_auth_server", // REPLACE THIS WITH YOUR KV BINDING NAME
+      "id": "e9a99fc2c02f48e09f39d72b5aecfa68" // REPLACE THIS WITH YOUR KV ID
     }
   ]
   /**

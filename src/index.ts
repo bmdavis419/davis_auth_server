@@ -33,25 +33,38 @@ export default {
         }),
       ]);
 
-      const emailData = (await emailInfo.json()) as {
-        email: string;
-        primary: boolean;
-        verified: boolean;
-        visibility: string;
-      }[];
+      const [userData, emailData] = await Promise.all([
+        userInfo.json() as Promise<{
+          id: number;
+          name: string | null;
+          avatar_url: string | null;
+        }>,
+        emailInfo.json() as Promise<
+          {
+            email: string;
+            primary: boolean;
+            verified: boolean;
+            visibility: string;
+          }[]
+        >,
+      ]);
 
       const primaryEmail = emailData.find((email) => email.primary);
 
-      const githubUser = (await userInfo.json()) as {
-        id: number;
+      if (!primaryEmail) {
+        throw new Error("No primary email found");
+      }
+
+      const user = {
+        id: crypto.randomUUID(),
+        email: primaryEmail.email,
+        providerId: userData.id.toString(),
+        provider: "github" as const,
+        name: userData.name,
+        image: userData.avatar_url,
       };
 
-      const userData = {
-        id: githubUser.id.toString(),
-        email: primaryEmail?.email ?? "bad man",
-      };
-
-      return userData;
+      return user;
     };
 
     return issuer({
@@ -68,14 +81,9 @@ export default {
       },
       success: async (ctx, value) => {
         if (value.provider === "github") {
-          console.log("GITHUB ID :0", value.clientID);
-
           const user = await getUser(value.tokenset.access);
 
-          return ctx.subject("user", {
-            id: user.id,
-            email: user.email,
-          });
+          return ctx.subject("user", user);
         }
         throw new Error("Invalid provider");
       },

@@ -8,9 +8,11 @@ declare global {
     davis_auth_server: KVNamespace;
     GITHUB_CLIENT_ID: string;
     GITHUB_CLIENT_SECRET: string;
+    ALLOWED_DOMAINS: string;
   }
 }
 
+// TODO save user to DB
 export default {
   async fetch(request, env, ctx): Promise<Response> {
     const getUser = async (accessToken: string) => {
@@ -78,6 +80,19 @@ export default {
           clientSecret: env.GITHUB_CLIENT_SECRET,
           scopes: ["user:email"],
         }),
+      },
+      allow: async (input) => {
+        if (input.redirectURI.startsWith("http://localhost")) {
+          return true;
+        }
+
+        const allowedRedirectURIs = env.ALLOWED_DOMAINS.split(",");
+
+        const allowedRedirectURI = allowedRedirectURIs.find((uri) =>
+          input.redirectURI.startsWith(uri)
+        );
+
+        return !!allowedRedirectURI;
       },
       success: async (ctx, value) => {
         if (value.provider === "github") {

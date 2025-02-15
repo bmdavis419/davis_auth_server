@@ -2,8 +2,6 @@
 	import '../app.css';
 	let { children, data } = $props();
 
-	let isLoadingAuth = $state(false);
-
 	$inspect(data);
 </script>
 
@@ -14,20 +12,12 @@
 			{#if data.user}
 				<a
 					href="/auth/logout"
-					class="rounded-md bg-red-500 px-4 py-2 text-white disabled:opacity-50"
-					aria-disabled={isLoadingAuth}
-					onclick={(e) => {
-						isLoadingAuth = true;
-					}}>Logout</a
+					class="rounded-md bg-red-500 px-4 py-2 text-white disabled:opacity-50">Logout</a
 				>
 			{:else}
 				<a
-					href="/auth/github/login"
-					class="rounded-md bg-blue-500 px-4 py-2 text-white disabled:opacity-50"
-					aria-disabled={isLoadingAuth}
-					onclick={(e) => {
-						isLoadingAuth = true;
-					}}>{isLoadingAuth ? 'Loading...' : 'Login'}</a
+					href="/auth/login"
+					class="rounded-md bg-blue-500 px-4 py-2 text-white disabled:opacity-50">Login</a
 				>
 			{/if}
 		</div>

@@ -57,6 +57,12 @@ export default {
         throw new Error("No primary email found");
       }
 
+      const curUser = await env.davis_auth_server.get(`github:${userData.id}`);
+
+      if (curUser) {
+        return JSON.parse(curUser);
+      }
+
       const user = {
         id: crypto.randomUUID(),
         email: primaryEmail.email,
@@ -65,6 +71,11 @@ export default {
         name: userData.name,
         image: userData.avatar_url,
       };
+
+      await env.davis_auth_server.put(
+        `github:${userData.id}`,
+        JSON.stringify(user)
+      );
 
       return user;
     };

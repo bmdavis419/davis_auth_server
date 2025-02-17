@@ -1,5 +1,4 @@
 import * as v from "valibot";
-
 import { createSubjects } from "@openauthjs/openauth/subject";
 
 const providers = ["github"] as const;

@@ -12,7 +12,6 @@ declare global {
   }
 }
 
-// TODO save user to DB
 export default {
   async fetch(request, env, ctx): Promise<Response> {
     const getUser = async (accessToken: string) => {
